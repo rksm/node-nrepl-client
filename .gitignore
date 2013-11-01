@@ -10,3 +10,4 @@ examples/nrepl-server/.lein-deps-sum
 examples/nrepl-server/.lein-failures
 examples/nrepl-server/.lein-plugins
 examples/nrepl-server/.lein-repl-history
+node_modules
