@@ -49,8 +49,11 @@ async.series([
     connection to an nREPL server
   * `options`: options from the [`net.connect`](http://nodejs.org/api/net.html#net_net_connect_options_connectionlistener)
     call.
-  * returns a `net.Socket`
+  * returns a `net.Socket` clojure connection
 
+* clojure connection
+  * Wraps [nREPL messages](https://github.com/clojure/tools.nrepl#messages).
+  * `eval(code, callback)`
 
 ### `nrepl-client/nrepl-server`
 
