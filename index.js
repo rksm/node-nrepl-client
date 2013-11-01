@@ -24,7 +24,7 @@ function nreplSend(socket, msg, callback) {
             sendData.responses.push(response);
             if (response.status && response.status[0] === 'done') messageReceiveDone();
         } catch (e) {
-            console.error('nrepl message receive error: ', e);
+            console.error('nrepl message receive error: ', e.stack || e);
             sendData.errors.push(e);
         }
     }
