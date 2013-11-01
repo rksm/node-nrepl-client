@@ -8,7 +8,7 @@ before_install:
 - sudo apt-get install leiningen
 
 before_script:
-- cd $TRAVIS_BUILD_DIR/examples/nrepl-server && lein install && lein run &
+- cd $TRAVIS_BUILD_DIR/examples/nrepl-server && lein install
 
 
 
