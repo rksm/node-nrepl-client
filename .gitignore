@@ -1,0 +1,12 @@
+examples/nrepl-server/target
+examples/nrepl-server/lib
+examples/nrepl-server/classes
+examples/nrepl-server/checkouts
+examples/nrepl-server/pom.xml
+examples/nrepl-server/pom.xml.asc
+examples/nrepl-server/*.jar
+examples/nrepl-server/*.class
+examples/nrepl-server/.lein-deps-sum
+examples/nrepl-server/.lein-failures
+examples/nrepl-server/.lein-plugins
+examples/nrepl-server/.lein-repl-history

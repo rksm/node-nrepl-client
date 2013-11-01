@@ -8,6 +8,7 @@
   },
   "keywords": [
     "Clojure",
+    "ClojureScript",
     "nrepl"
   ],
   "author": "RobertKrahn",
