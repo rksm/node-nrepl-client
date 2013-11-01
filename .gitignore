@@ -11,3 +11,4 @@ examples/nrepl-server/.lein-failures
 examples/nrepl-server/.lein-plugins
 examples/nrepl-server/.lein-repl-history
 node_modules
+npm-debug.log
