@@ -19,9 +19,17 @@ function nreplSend(socket, msg, callback) {
         };
     function dataHandler(data) {
         try {
-            var response = bencode.decode(data, 'utf8');
-// console.log('from clj: ', response);
-            sendData.responses.push(response);
+            var bytesLeft = data.length;
+            while (bytesLeft > 0) {
+                var response = bencode.decode(data, 'utf8'),
+                    encodedResponseLength = bencode.encode(response, 'utf8').length,
+                    bytesLeft = data.length - encodedResponseLength;
+                //console.log('raw ascii: ', data.toString('ascii'))
+                //console.log('from clj: ', response);
+                //console.log('received', data.length, 'decoded', encodedResponseLength, 'left', bytesLeft)
+                sendData.responses.push(response);
+                data = data.slice(encodedResponseLength);
+            }
             if (response.status && response.status[0] === 'done') messageReceiveDone();
         } catch (e) {
             console.error('nrepl message receive error: ', e.stack || e);
@@ -34,7 +42,7 @@ function nreplSend(socket, msg, callback) {
         callback && callback(
             sendData.errors.length > 0 ? sendData.errors : null,
             sendData.responses);
-    }    
+    }
     socket.write(bencode.encode(msg), 'binary');
     socket.on('data', dataHandler);
 }
