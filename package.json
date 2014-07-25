@@ -18,6 +18,7 @@
     "bencode": "~0.4.3"
   },
   "devDependencies": {
-    "nodeunit": "~0.8"
+    "nodeunit": "~0.8",
+    "tree-kill": "~0.0.6"
   }
 }
