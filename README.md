@@ -7,13 +7,13 @@ Connects node.js to a [Clojure nrepl server](https://github.com/clojure/tools.nr
 To connect to a running nREPL server and send and receive an eval request do:
 
 ```js
-var nreplClient = require('nrepl-client'),
-    con = nreplClient.connect({port: 7888});
+var nreplClient = require('nrepl-client');
+var con = nreplClient.connect({port: 7888});
 con.once('connect', function() {
     con.eval('(+ 3 4)', function(err, result) {
         console.log('%s -> %s', expr, err || result);
         con.end();
-    });    
+    });
 });
 ```
 
@@ -33,7 +33,7 @@ async.series([
             con.eval('(+ 3 4)', function(err, result) {
                 console.log('eval result = %s', result);
                 con.end(); next();
-            });    
+            });
         });
     },
     function(next) { nreplServer.stopServer(port, next); }

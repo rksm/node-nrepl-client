@@ -14,8 +14,7 @@ var kill = require('tree-kill');
 var serverProc;
 function startServer(port, thenDo, pathToProject) {
     pathToProject = pathToProject || path.join(__dirname, 'examples', 'nrepl-server');
-    serverProc = spawn('lein', ['repl', ':headless', ':port', port], 
-        {cwd: pathToProject});
+    serverProc = spawn('lein', ['repl', ':headless', ':port', port], {cwd: pathToProject});
     serverProc.on('exit', function(code) {
         console.log("nREPL server stopped with code %s: %s", code, output);
         serverProc = null;
@@ -45,4 +44,4 @@ function stopServer(port, thenDo) {
 module.exports = {
     startServer: startServer,
     stopServer: stopServer
-}
+};
