@@ -12,9 +12,9 @@
     "nrepl"
   ],
   "author": "Robert Krahn",
+  "contributors": ["Stuart Mitchell <stu@stuartmitchell.com>"],
   "license": "MIT",
   "dependencies": {
-    "async": "~0.2",
     "bencode": "~0.4.3",
     "tree-kill": "~0.0.6"
   },
