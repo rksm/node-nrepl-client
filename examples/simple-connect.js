@@ -4,6 +4,8 @@
  * This is an example of how to use nrepl-client. Before running this code it
  * is necessary to start a nREPL server, see examples/minimal-nrepl-server/
  *
+ * Usage like
+ *   node -e "require('../nrepl-server').startServer(7888, function() { require('./simple-connect'); });"
  */
 
 var nreplClient = require('../index');
