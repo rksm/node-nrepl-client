@@ -19,6 +19,7 @@
     "tree-kill": "~0.0.6"
   },
   "devDependencies": {
+    "async": "~0.2",
     "nodeunit": "~0.8"
   }
 }
