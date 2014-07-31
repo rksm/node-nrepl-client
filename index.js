@@ -1,6 +1,7 @@
+/*global console,require*/
+
 var bencode = require('bencode'),
-    net = require('net'),
-    async = require('async');
+    net = require('net');
 
 function uuid() { // helper
     var id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -11,19 +12,27 @@ function uuid() { // helper
 // id -> send data mapping
 // send data: {callback: FUNCTION}
 var sendsInProgress = {};
+
 function nreplSend(socket, msg, callback) {
+
     var id = msg.id || (msg.id = uuid()),
         sendData = sendsInProgress[msg.id] = {
             responses: [],
             errors: []
         };
+
+    socket.write(bencode.encode(msg), 'binary');
+    socket.on('data', dataHandler);
+
+    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
     function dataHandler(data) {
         try {
-            var bytesLeft = data.length;
+            var bytesLeft = data.length, response;
             while (bytesLeft > 0) {
-                var response = bencode.decode(data, 'utf8'),
-                    encodedResponseLength = bencode.encode(response, 'utf8').length,
-                    bytesLeft = data.length - encodedResponseLength;
+                response = bencode.decode(data, 'utf8');
+                var encodedResponseLength = bencode.encode(response, 'utf8').length;
+                bytesLeft = data.length - encodedResponseLength;
                 //console.log('raw ascii: ', data.toString('ascii'))
                 //console.log('from clj: ', response);
                 //console.log('received', data.length, 'decoded', encodedResponseLength, 'left', bytesLeft)
@@ -36,6 +45,7 @@ function nreplSend(socket, msg, callback) {
             sendData.errors.push(e);
         }
     }
+
     function messageReceiveDone() {
         delete sendsInProgress[id];
         socket.removeListener('data', dataHandler);
@@ -43,8 +53,7 @@ function nreplSend(socket, msg, callback) {
             sendData.errors.length > 0 ? sendData.errors : null,
             sendData.responses);
     }
-    socket.write(bencode.encode(msg), 'binary');
-    socket.on('data', dataHandler);
+
 }
 
 function cljEval(socket, code, callback) {

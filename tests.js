@@ -1,9 +1,10 @@
+/*global console,require,module,setTimeout,clearTimeout*/
+
 var nreplClient = require('./index');
 var nreplServer = require('./nrepl-server');
 var async = require("async");
-var path = require("path");
-var exec = require("child_process").exec;
-var port = 7888, connections = [], timeoutDelay = 5*1000, timeout;
+var port = 7888, connections = [],
+    timeoutDelay = 5*1000, timeout;
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // to clean up...
@@ -12,7 +13,7 @@ nreplClient.connect = function() {
     var con = connect.apply(nreplClient, arguments);
     con.on('close', function() {
         console.log('nREPL client connection closed');
-    })
+    });
     connections.push(con);
     return con;
 };
@@ -27,9 +28,11 @@ function createTimeout(test) {
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 var tests = {
+
     setUp: function (callback) {
-        nreplServer.startServer(port, callback)
+        nreplServer.startServer(port, callback);
     },
+
     tearDown: function (callback) {
         async.forEach(connections, function(con, next) {
             con.once('close', next);
@@ -39,6 +42,7 @@ var tests = {
             nreplServer.stopServer(port, callback);
         });
     },
+
     testSimpleEval: function (test) {
         test.expect(2);
         createTimeout(test);
