@@ -1,4 +1,4 @@
-/*global console,require,module*/
+/*global console,require,module,process,__dirname*/
 
 /*
  * Depending on how you start the clojure nREPL server you don't need this.
@@ -9,9 +9,8 @@
 var path = require("path");
 var spawn = require("child_process").spawn;
 var kill = require('tree-kill');
+var verbose = false,  serverProc;
 
-
-var serverProc;
 function startServer(port, thenDo, pathToProject) {
     pathToProject = pathToProject || path.join(__dirname, 'examples', 'nrepl-server');
     serverProc = spawn('lein', ['repl', ':headless', ':port', port], {cwd: pathToProject});
@@ -39,8 +38,10 @@ function startServer(port, thenDo, pathToProject) {
 
     serverProc.stdout.on('data', gatherOut);
     serverProc.stderr.on('data', gatherOut);
-    serverProc.stdout.pipe(process.stdout);
-    serverProc.stderr.pipe(process.stdout);
+    if (verbose) {
+        serverProc.stdout.pipe(process.stdout);
+        serverProc.stderr.pipe(process.stdout);
+    }
 }
 
 function stopServer(port, thenDo) {
