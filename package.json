@@ -16,7 +16,8 @@
   "license": "MIT",
   "dependencies": {
     "bencode": "~0.4.3",
-    "tree-kill": "~0.0.6"
+    "tree-kill": "~0.0.6",
+    "spawn-cmd": "~0.0.2"
   },
   "devDependencies": {
     "async": "~0.2",

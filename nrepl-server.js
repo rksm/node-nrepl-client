@@ -7,7 +7,7 @@
  */
 
 var path = require("path");
-var spawn = require("child_process").spawn;
+var spawn = require("spawn-cmd").spawn;
 var kill = require('tree-kill');
 var verbose = false,  serverProc;
 
