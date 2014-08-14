@@ -49,8 +49,8 @@ function stopServer(port, thenDo) {
         console.log("nREPL server shutdown");
         thenDo(null); return; }
     console.log("Stopping nREPL server with pid %s", serverProc.pid);
+    serverProc.on('close', thenDo);
     kill(serverProc.pid, 'SIGKILL');
-    thenDo(null);
 }
 
 module.exports = {
