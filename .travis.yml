@@ -6,6 +6,6 @@ node_js:
 before_install:
   - sudo apt-get update
   - sudo apt-get install leiningen
-  - lein2 --version
+  - lein --version
 
 script: "npm test"
