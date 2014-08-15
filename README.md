@@ -14,38 +14,25 @@ around* ;)
 To connect to a running nREPL server and send and receive an eval request do:
 
 ```js
-var nreplClient = require('nrepl-client');
-var con = nreplClient.connect({port: 7888});
-con.once('connect', function() {
+var client = require('nrepl-client').connect({port: 7888});
+client.once('connect', function() {
     var expr = '(+ 3 4)';
-    con.eval(expr, function(err, result) {
+    client.eval(expr, function(err, result) {
         console.log('%s -> %s', expr, err || result);
-        con.end();
+        client.end();
     });
 });
 ```
 
-To also start an nREPL server from node do:
+To also start an nREPL server via `lein repl :headless` from node do:
 
 ```js
-var nreplClient = require('src/nrepl-client');
-var nreplServer = require('src/nrepl-client/nrepl-server');
-var async = require("async");
-var port = 7888;
-
-async.series([
-    function(next) { nreplServer.startServer(port, next); },
-    function(next) {
-        var con = nreplClient.connect({port: port});
-        con.once('connect', function() {
-            con.eval('(+ 3 4)', function(err, result) {
-                console.log('eval result = %s', result);
-                con.end(); next();
-            });
-        });
-    },
-    function(next) { nreplServer.stopServer(port, next); }
-], function() { console.log('Done'); });
+nreplServer.start({port: 7888}, function(err, serverState) {
+    // server started!
+    // Do stuff here..., e.g. nreplClient.connect(...)
+    // When you are done:
+     nreplServer.stop(serverState); 
+});
 ```
 
 ## API
@@ -55,8 +42,7 @@ async.series([
 * `connect(options)`
   * Creates a [`net.Socket`](http://nodejs.org/api/net.html#net_class_net_socket)
     connection to an nREPL server
-  * `options`: options from the [`net.connect`](http://nodejs.org/api/net.html#net_net_connect_options_connectionlistener)
-    call.
+  * `options`: options from the [`net.connect`](http://nodejs.org/api/net.html#net_net_connect_options_connectionlistener) call.
   * returns a `net.Socket` clojure connection
 
 * clojure connection
@@ -65,10 +51,10 @@ async.series([
 
 ### `nrepl-client/nrepl-server`
 
-* `startServer(port, callback)`
-  * `port` the port the nREPL server should be started on
-  * `callback(err, server)` function called when the server is started
+* `start(options, callback)`
+  * `options` options for configuring the nREPL server. Optional. `options == {startTimeout: NUMBER, verbose: BOOL, projectPath: STRING, hostname: STRING, port: NUMBER}`. See [nrepl-server.js](src/nrepl-server.js) for defaults.
+  * `callback(err, serverState)` function called when the server is started. `serverState == {proc: PROCESS, hostname: STRING, port: NUMBER, started: BOOL, exited: BOOL, timedout: BOOL}`
 
-* `stopServer(port, callback)`
-  * `port` port of nREPL server that should be stopped
+* `stop(serverState, callback)`
+  * `serverState` serverState returned from start
   * `callback(err)` function called when the server is stopped
