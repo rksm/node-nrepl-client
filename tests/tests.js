@@ -7,7 +7,7 @@ var async = require("async");
 var exec = require("child_process").exec;
 
 var serverOpts = {port: 7888, verbose: true},
-    timeoutDelay = 5*1000,
+    timeoutDelay = 20*1000,
     timeoutProc, client, server;
 
 function createTimeout(test) {
