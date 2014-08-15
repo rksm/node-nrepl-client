@@ -11,7 +11,6 @@ var path = require("path");
 var ps = require("child_process");
 var util = require("util");
 var merge = util._extend;
-var leinCommand;
 
 // note, the JVM will stick around when we just kill the spawning process
 // so we have to do a tree kill for the process. unfortunately the "tree-kill"
@@ -92,35 +91,21 @@ function startSentinel(options, serverState, thenDo) {
 
 }
 
-function findLeinCommand(thenDo) {
-    testCommand("lein", testCommand.bind(null, "lein2", thenDo));
-    function testCommand(executable, callback) {
-        if (leinCommand) thenDo(null);
-        else ps.exec(executable +" --version").once('close', function(code, out, err) {
-            if (!code) leinCommand = executable;
-            (callback || thenDo)(code && err);
-        });
-    }
-}
-
 function startServer(hostname, port, projectPath, thenDo) {
-    findLeinCommand(function(err) {
-        if (err) { thenDo(err, null); return; }
-        try {
-            var procArgs = ["repl", ":headless"];
-            if (hostname) procArgs = procArgs.concat([':host', hostname]);
-            if (port) procArgs = procArgs.concat([':port', port]);
-            var proc = ps.spawn(leinCommand, procArgs, {cwd: projectPath});
-        } catch (e) { thenDo(e, null); return; }
-        thenDo(null, {
-            proc: proc,
-            stdout: new Buffer(""),
-            stderr: new Buffer(""),
-            hostname: undefined, port: undefined, // set when started
-            started: false,
-            exited: false,
-            timedout: undefined
-        });
+    try {
+        var procArgs = ["repl", ":headless"];
+        if (hostname) procArgs = procArgs.concat([':host', hostname]);
+        if (port) procArgs = procArgs.concat([':port', port]);
+        var proc = ps.spawn('lein', procArgs, {cwd: projectPath});
+    } catch (e) { thenDo(e, null); return; }
+    thenDo(null, {
+        proc: proc,
+        stdout: new Buffer(""),
+        stderr: new Buffer(""),
+        hostname: undefined, port: undefined, // set when started
+        started: false,
+        exited: false,
+        timedout: undefined
     });
 }
 
