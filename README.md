@@ -1,6 +1,13 @@
 # node.js nREPL client [![Build Status](https://travis-ci.org/rksm/node-nrepl-client.png?branch=master)](https://travis-ci.org/rksm/node-nrepl-client)
 
-Connects node.js to a [Clojure nrepl server](https://github.com/clojure/tools.nrepl).
+Connects node.js as a nrepl client to a [Clojure nrepl server](https://github.com/clojure/tools.nrepl).
+
+
+This is different from [cljs-noderepl](https://github.com/bodil/cljs-noderepl) and similar projects as it _does not connect node.js as the repl "target"_ (so that a nrepl Clojure client can eval code in a JS context) _but the other way around_This is different from [cljs-noderepl](https://github.com/bodil/cljs-noderepl)
+and similar projects as it *does not connect node.js as the repl "target"* (so
+that a nrepl Clojure client can eval code in a JS context) *but the other way
+around* ;)
+
 
 ## Usage
 
@@ -21,8 +28,8 @@ con.once('connect', function() {
 To also start an nREPL server from node do:
 
 ```js
-var nreplClient = require('nrepl-client');
-var nreplServer = require('nrepl-client/nrepl-server');
+var nreplClient = require('src/nrepl-client');
+var nreplServer = require('src/nrepl-client/nrepl-server');
 var async = require("async");
 var port = 7888;
 
