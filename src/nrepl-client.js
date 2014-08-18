@@ -20,29 +20,38 @@ function uuid() { // helper
 // send data: {callback: FUNCTION}
 var sendsInProgress = {};
 
-function createMessageStream(socket) {
+function createMessageStream(verbose, socket) {
     var messageStream = new stream.Transform();
     messageStream._writableState.objectMode = false;
     messageStream._readableState.objectMode = true;
     messageStream._bytesLeft = 0;
     messageStream._messageCache = [];
+    messageStream._chunkLeft = new Buffer("");
 
     messageStream._transform = function(chunk, encoding, callback) {
-console.log("Client got " + chunk);
         this._bytesLeft += chunk.length;
+        verbose && console.log("nREPL message stream processing chunk of size %s", Numbers.humanReadableByteSize(this._bytesLeft));
+        this._chunkLeft = Buffer.concat([this._chunkLeft, chunk]);
         var messages = [];
         try {
             while (this._bytesLeft > 0) {
-                var response = bencode.decode(chunk, 'utf8');
+                try {
+                    var response = bencode.decode(this._chunkLeft, 'utf8');
+                } catch (e) {
+                    // bencode.decode fails when the current chunk isn't
+                    // complete, in this case we just cache the chunk and wait to
+                    // be called again
+                    callback(); return;
+                }
                 var encodedResponseLength = bencode.encode(response, 'utf8').length;
                 this._bytesLeft -= encodedResponseLength;
                 this.push(response);
                 this._messageCache.push(response);
-                chunk = chunk.slice(encodedResponseLength);
-            }
-            if (response.status && response.status[0] === 'done') {
-                this.emit("messageSequence", this._messageCache);
-                this._messageCache = [];
+                this._chunkLeft = this._chunkLeft.slice(encodedResponseLength);
+                if (response.status && response.status[0] === 'done') {
+                    this.emit("messageSequence", this._messageCache);
+                    this._messageCache = [];
+                }
             }
         } catch (e) {
             this.emit('error', e);
@@ -61,7 +70,7 @@ function nreplSend(socket, messageStream, msg, callback) {
     function errHandler(err) { errors.push(err); }
     messageStream.on('error', errHandler);
     messageStream.once('messageSequence', function(messages) {
-        socket.removeListener('error', errHandler);
+        messageStream.removeListener('error', errHandler);
         callback && callback(errors.length > 0 ? errors : null, messages);
     });
 }
@@ -81,9 +90,8 @@ function describe(socket, messageStream, verbose, callback) {
 }
 
 function connect(options) {
-console.log("connect", options);
     var con = net.connect(options);
-    var messageStream = createMessageStream(con);
+    var messageStream = createMessageStream(options.verbose, con);
     if (options.verbose) {
         messageStream.on("data", function(message) { console.log("nREPL message: ", message); });
     }
