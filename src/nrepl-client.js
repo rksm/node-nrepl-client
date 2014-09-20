@@ -1,6 +1,7 @@
 /*global console,require*/
 
 var bencode = require('bencode'),
+    util = require('util'),
     net = require('net'),
     stream = require('stream'),
     events = require("events");;
@@ -30,7 +31,6 @@ function createMessageStream(verbose, socket) {
 
     messageStream._transform = function(chunk, encoding, callback) {
         this._bytesLeft += chunk.length;
-        verbose && console.log("nREPL message stream processing chunk of size %s", Numbers.humanReadableByteSize(this._bytesLeft));
         this._chunkLeft = Buffer.concat([this._chunkLeft, chunk]);
         var messages = [];
         try {
@@ -48,8 +48,17 @@ function createMessageStream(verbose, socket) {
                 this.push(response);
                 this._messageCache.push(response);
                 this._chunkLeft = this._chunkLeft.slice(encodedResponseLength);
-                if (response.status && response.status[0] === 'done') {
-                    this.emit("messageSequence", this._messageCache);
+                var st = util.isArray(response.status) && response.status;
+                if (st && (st.indexOf("done") > -1 || st.indexOf("error") > -1)) {
+                    var receivers = {};
+                    this._messageCache.forEach(function(msg) {
+                        var queue = receivers[msg.id] || (receivers[msg.id] = []);
+                        queue.push(msg);
+                    });
+                    Object.keys(receivers).forEach(function(id) {
+                        this.emit("messageSequence", id, receivers[id]);
+                        this.emit("messageSequence-" + id, receivers[id]);
+                    }, this);
                     this._messageCache = [];
                 }
             }
@@ -63,16 +72,20 @@ function createMessageStream(verbose, socket) {
     return socket.pipe(messageStream);
 }
 
-function nreplSend(socket, messageStream, msg, callback) {
-    var id = msg.id || (msg.id = uuid()), errors = [];
+function nreplSend(socket, messageStream, msgSpec, callback) {
+    var msg = {id: msgSpec.id || uuid()};
+    Object.keys(msgSpec).forEach(function(k) {
+        if (msgSpec[k] !== undefined) msg[k] = msgSpec[k]; });
+    var errors = [];
     socket.write(bencode.encode(msg), 'binary');
 
     function errHandler(err) { errors.push(err); }
     messageStream.on('error', errHandler);
-    messageStream.once('messageSequence', function(messages) {
+    messageStream.once('messageSequence-'+msg.id, function(messages) {
         messageStream.removeListener('error', errHandler);
         callback && callback(errors.length > 0 ? errors : null, messages);
     });
+    return msg;
 }
 
 // default nREPL ops, see https://github.com/clojure/tools.nrepl/blob/master/doc/ops.md
