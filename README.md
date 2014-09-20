@@ -13,25 +13,18 @@ around* ;)
 To connect to a running nREPL server and send and receive an eval request do:
 
 ```js
-var client = require('nrepl-client').connect({port: 7888});
-client.once('connect', function() {
+var nreplClient = require('nrepl-client');
+nreplClient.connect({port: 7889}).once('connect', function() {
     var expr = '(+ 3 4)';
     client.eval(expr, function(err, result) {
-        console.log('%s -> %s', expr, err || result);
+        console.log('%s => ', expr, err || result);
         client.end();
     });
 });
 ```
 
-To also start an nREPL server via `lein repl :headless` from node do:
-
-```js
-nreplServer.start({port: 7888}, function(err, serverState) {
-    // server started!
-    // Do stuff here..., e.g. nreplClient.connect(...)
-    // When you are done:
-     nreplServer.stop(serverState); 
-});
+For a more detailed example and to use node.js also to start an nREPL Clojure
+process see [examples/simple-connect.js]().
 ```
 
 ## API
@@ -40,13 +33,22 @@ nreplServer.start({port: 7888}, function(err, serverState) {
 
 * `connect(options)`
   * Creates a [`net.Socket`](http://nodejs.org/api/net.html#net_class_net_socket)
-    connection to an nREPL server
+    connection to an nREPL server. The connection object itself will have added
+    methods, see below.
   * `options`: options from the [`net.connect`](http://nodejs.org/api/net.html#net_net_connect_options_connectionlistener) call.
   * returns a `net.Socket` clojure connection
 
 * clojure connection
   * Wraps [nREPL messages](https://github.com/clojure/tools.nrepl#messages).
-  * `eval(code, callback)`
+  * `clone([session,] callback)
+  * `close([session,] callback)
+  * `describe([verbose,] callback)
+  * `eval(code, [session, id, evalFunc,] callback)
+  * `interrupt(session, id, callback)
+  * `loadFile(fileContent, [fileName, filePath,] callback)
+  * `lsSessions(callback)
+  * `stdin(stdin, callback)
+  * `send(msgObj, callback)` sends a custom message
 
 ### `nrepl-client/nrepl-server`
 

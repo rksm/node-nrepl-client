@@ -118,7 +118,7 @@ var defaultOptions = {
     startTimeout: 10*1000, // milliseconds
     verbose: false,
     projectPath: process.cwd(),
-    // if host / port stay undefined they are choosen by clojure
+    // if host / port stay undefined they are choosen by leiningen
     hostname: undefined,
     port: undefined
 }

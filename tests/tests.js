@@ -6,8 +6,8 @@ var async = require("async");
 
 var exec = require("child_process").exec;
 
-var serverOpts = {port: 7888, verbose: true},
-    timeoutDelay = 5*1000,
+var serverOpts = {port: 7889, verbose: true, startTimeout: 20*1000},
+    timeoutDelay = 10*1000,
     timeoutProc, client, server;
 
 function createTimeout(test) {
@@ -40,7 +40,7 @@ var tests = {
     },
 
     tearDown: function (callback) {
-        // exec("bash -c 'ps aux | grep \":port 7888\" | grep -v grep | awk \"{ print $2 }\" | xargs kill -9'");
+        // exec("bash -c 'ps aux | grep \":port 7889\" | grep -v grep | awk \"{ print $2 }\" | xargs kill -9'");
         if (!client) {
             console.error("client undefined in tearDown?!");
             callback(); return;
@@ -53,10 +53,11 @@ var tests = {
     },
 
     testSimpleEval: function (test) {
-        test.expect(2); createTimeout(test);
-        client.eval('(+ 3 4)', function(err, result) {
+        test.expect(3); createTimeout(test);
+        client.eval('(+ 3 4)', function(err, messages) {
             test.ok(!err, 'Got errors: ' + err);
-            test.equal(result, '7');
+            test.equal(messages[0].value, '7');
+            test.deepEqual(messages[1].status, ['done']);
             test.done();
         });
     }
