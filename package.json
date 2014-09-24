@@ -1,6 +1,6 @@
 {
   "name": "nrepl-client",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "node client to interact with a Clojure nREPL server.",
   "main": "src/nrepl-client.js",
   "scripts": {
