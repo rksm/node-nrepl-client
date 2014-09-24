@@ -55,6 +55,8 @@ var tests = {
     testSimpleEval: function (test) {
         test.expect(3); createTimeout(test);
         client.eval('(+ 3 4)', function(err, messages) {
+            console.log("in simple eval");
+            console.log(messages);
             test.ok(!err, 'Got errors: ' + err);
             test.equal(messages[0].value, '7');
             test.deepEqual(messages[1].status, ['done']);

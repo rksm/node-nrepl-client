@@ -93,16 +93,26 @@ function nreplSend(socket, messageStream, msgSpec, callback) {
     var msg = {id: msgSpec.id || uuid()};
     Object.keys(msgSpec).forEach(function(k) {
         if (msgSpec[k] !== undefined) msg[k] = msgSpec[k]; });
-    var errors = [];
     socket.write(bencode.encode(msg), 'binary');
 
-    function errHandler(err) { errors.push(err); }
+    var errors = [], messages = [],
+        msgHandlerName = 'messageSequence-' + msg.id;
     messageStream.on('error', errHandler);
-    messageStream.once('messageSequence-'+msg.id, function(messages) {
-        messageStream.removeListener('error', errHandler);
-        callback && callback(errors.length > 0 ? errors : null, messages);
-    });
+    messageStream.on(msgHandlerName, msgHandler);
     return msg;
+
+    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+    function errHandler(err) { errors.push(err); }
+    function msgHandler(_messages) {
+        var done = _messages.some(function(msg) { return !!msg.status; });
+            // return msg.status && msg.status.indexOf("done") > -1; });
+        messages = messages.concat(_messages);
+        if (!done) return;
+        messageStream.removeListener('error', errHandler);
+        messageStream.removeListener(msgHandlerName, errHandler);
+        callback && callback(errors.length > 0 ? errors : null, messages);
+    }
 }
 
 // default nREPL ops, see https://github.com/clojure/tools.nrepl/blob/master/doc/ops.md
@@ -126,8 +136,7 @@ function close(connection, session, callback) {
     });
 }
 
-function describe(connection, verbose, callback) {
-    if (typeof verbose === 'function') { callback = verbose; verbose = undefined; }
+function describe(connection, session, verbose, callback) {
     return connection.send({op: 'describe', 'verbose?': verbose ? 'true' : undefined}, callback);
 }
 
