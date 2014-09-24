@@ -30,6 +30,7 @@ function createMessageStream(verbose, socket) {
     messageStream._chunkLeft = new Buffer("");
 
     messageStream._transform = function(chunk, encoding, callback) {
+        verbose && console.log("nREPL message chunk received (%s bytes)", chunk.length);
         this._bytesLeft += chunk.length;
         this._chunkLeft = Buffer.concat([this._chunkLeft, chunk]);
         var messages = [];
@@ -44,23 +45,12 @@ function createMessageStream(verbose, socket) {
                     callback(); return;
                 }
                 var encodedResponseLength = bencode.encode(response, 'utf8').length;
+                verbose && nreplMessageStreamDebugLog(response, encodedResponseLength);
                 this._bytesLeft -= encodedResponseLength;
                 this.push(response);
                 this._messageCache.push(response);
                 this._chunkLeft = this._chunkLeft.slice(encodedResponseLength);
-                var st = util.isArray(response.status) && response.status;
-                if (st && (st.indexOf("done") > -1 || st.indexOf("error") > -1)) {
-                    var receivers = {};
-                    this._messageCache.forEach(function(msg) {
-                        var queue = receivers[msg.id] || (receivers[msg.id] = []);
-                        queue.push(msg);
-                    });
-                    Object.keys(receivers).forEach(function(id) {
-                        this.emit("messageSequence", id, receivers[id]);
-                        this.emit("messageSequence-" + id, receivers[id]);
-                    }, this);
-                    this._messageCache = [];
-                }
+                this._messageCache = consumeNreplMessageStream(this.emit.bind(this), this._messageCache);
             }
         } catch (e) {
             this.emit('error', e);
@@ -70,6 +60,33 @@ function createMessageStream(verbose, socket) {
     };
 
     return socket.pipe(messageStream);
+}
+
+function nreplMessageStreamDebugLog(response, length) {
+    var inspected = "";
+    if (typeof response === "object") {
+        inspected += "{\n" + Object.keys(response).map(function(k) {
+            var v = response[k];
+            if (typeof v === 'string' && v.length > 100)
+                v = v.slice(0,100) + "...";
+                // v = '"' + (v.slice(0,100) + "...").replace(/"/g, '\\"') + '"';
+            return k + ": " + util.inspect(v, {depth: 0});
+        }).join(",\n  ") + "\n}";
+    } else inspected = util.inspect(response, {depth: 0});
+    console.log("nrepl message received (%s bytes, %s)", length, inspected);
+}
+
+function consumeNreplMessageStream(emit, messages) {
+    var receivers = messages.reduce(function(receivers, msg) {
+        var queue = receivers[msg.id] || (receivers[msg.id] = []);
+        queue.push(msg);
+        return receivers;
+    }, {});
+    Object.keys(receivers).forEach(function(id) {
+        emit("messageSequence", id, receivers[id]);
+        emit("messageSequence-" + id, receivers[id]);
+    });
+    return [];
 }
 
 function nreplSend(socket, messageStream, msgSpec, callback) {
@@ -148,11 +165,8 @@ function stdin(connection, stdin, callback) {
 }
 
 function connect(options) {
-    var con = net.connect(options);
-    var messageStream = createMessageStream(options.verbose, con);
-    if (options.verbose) {
-        messageStream.on("data", function(message) { console.log("nREPL message: ", message); });
-    }
+    var con           = net.connect(options),
+        messageStream = createMessageStream(options.verbose, con);
     con.sessions      = [];
     con.messageStream = messageStream;
     con.send          = nreplSend.bind(null, con, messageStream);
