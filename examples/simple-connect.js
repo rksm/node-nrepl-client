@@ -22,7 +22,9 @@ con.on("error", function(err) {
 function cljEval(next) {
     var expr = '(+ 3 4)';
     con.eval(expr, function(err, result) {
-        console.log('%s => %s', expr, util.inspect(result));
+        var value = result.reduce(function(result, msg) {
+            return msg.value ? result + msg.value : result; }, "");
+        console.log('%s => %s', expr, value);
         next();
     });
 }
