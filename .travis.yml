@@ -3,8 +3,11 @@ language: node_js
 node_js:
   - "0.10"
 
-before_install:
-  - sudo apt-get update
-  - sudo apt-get install leiningen
+before_script:
+  - wget https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
+  - chmod a+x lein
+  - ./lein
+  - export PATH=$PWD:$PATH
+  - lein --version
 
 script: "npm test"

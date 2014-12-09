@@ -1,15 +1,16 @@
 {
   "name": "nrepl-client",
-  "version": "0.1.4",
+  "version": "0.2.1",
   "description": "node client to interact with a Clojure nREPL server.",
-  "main": "index.js",
+  "main": "src/nrepl-client.js",
   "scripts": {
-    "test": "node_modules/nodeunit/bin/nodeunit tests.js --reporter minimal"
+    "test": "node_modules/nodeunit/bin/nodeunit tests/tests.js --reporter minimal"
   },
   "keywords": [
     "Clojure",
     "ClojureScript",
-    "nrepl"
+    "nREPL",
+    "live programming"
   ],
   "author": "Robert Krahn",
   "contributors": ["Stuart Mitchell <stu@stuartmitchell.com>"],
