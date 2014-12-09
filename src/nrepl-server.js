@@ -137,10 +137,10 @@ function stop(serverState, thenDo) {
     if (serverState.exited) { thenDo(null); return; }
     // FIXME what if when kill doesn't work? At least attach to `close` and
     // throw a time out error...
+    kill(serverState.proc.pid, 'SIGTERM');
     serverState.proc.once('close', function() {
         console.log("Stopped nREPL server with pid %s", serverState.proc.pid);
         thenDo && thenDo(null);
-    kill(serverState.proc.pid, 'SIGTERM');
     });
 }
 
