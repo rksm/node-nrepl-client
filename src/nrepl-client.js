@@ -140,11 +140,12 @@ function describe(connection, session, verbose, callback) {
     return connection.send({op: 'describe', 'verbose?': verbose ? 'true' : undefined}, callback);
 }
 
-function cljEval(connection, code, session, id, evalFunc, callback) {
+function cljEval(connection, code, ns, session, id, evalFunc, callback) {
     if (typeof session === 'function') { callback = session; session = undefined; }
+    else if (typeof ns === 'function') { callback = ns; ns = undefined; }
     else if (typeof id === 'function') { callback = id; id = undefined; }
     else if (typeof evalFunc === 'function') { callback = evalFunc; evalFunc = undefined; }
-    return connection.send({op: 'eval', code: code, session: session, id: id, "eval": evalFunc}, callback);
+    return connection.send({op: 'eval', code: code, ns: ns, session: session, id: id, "eval": evalFunc}, callback);
 }
 
 function interrupt(connection, session, id, callback) {
@@ -153,9 +154,9 @@ function interrupt(connection, session, id, callback) {
     return connection.send({op: 'interrupt', "interrupt-id": id, session: session}, callback);
 }
 
-function loadFile(connection, fileContent, fileName, filePath, callback) {
-    if (typeof fileName === 'function') { callback = fileName; fileName = undefined; }
-    else if (typeof filePath === 'function') { callback = filePath; filePath = undefined; }
+function loadFile(connection, fileContent, fileName, filePath, session, id, callback) {
+    if (typeof session === 'function') { callback = session; session = undefined; }
+    else if (typeof id === 'function') { callback = id; id = undefined; }
     // :file-name Name of source file, e.g. io.clj
     // :file-path Source-path-relative path of the source file, e.g. clojure/java/io.clj
     return connection.send({op: 'load-file', "file": fileContent, "file-name": fileName, "file-path": filePath}, callback);
