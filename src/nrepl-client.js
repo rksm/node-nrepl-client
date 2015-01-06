@@ -145,7 +145,7 @@ function cljEval(connection, code, ns, session, id, evalFunc, callback) {
     else if (typeof ns === 'function') { callback = ns; ns = undefined; }
     else if (typeof id === 'function') { callback = id; id = undefined; }
     else if (typeof evalFunc === 'function') { callback = evalFunc; evalFunc = undefined; }
-    return connection.send({op: 'eval', code: code, ns: ns, session: session, id: id, "eval": evalFunc}, callback);
+    return connection.send({op: 'eval', code: code, ns: ns || undefined, session: session, id: id, "eval": evalFunc}, callback);
 }
 
 function interrupt(connection, session, id, callback) {
