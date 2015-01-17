@@ -21,6 +21,28 @@ function uuid() { // helper
 // send data: {callback: FUNCTION}
 var sendsInProgress = {};
 
+var messageLogPrinter = function(response, length) {
+    var inspected = "";
+    if (typeof response === "object") {
+        inspected += "{\n" + Object.keys(response).map(function(k) {
+            var v = response[k];
+            if (typeof v === 'string' && v.length > 100)
+                v = v.slice(0,100) + "...";
+                // v = '"' + (v.slice(0,100) + "...").replace(/"/g, '\\"') + '"';
+            return k + ": " + util.inspect(v, {depth: 0});
+        }).join(",\n  ") + "\n}";
+    } else inspected = util.inspect(response, {depth: 0});
+    return inspected;
+}
+var nullLogger = {log: function(response, length) {}};
+var defaultLogger = {
+  log: function(response, length) {
+    var printed = messageLogPrinter(response, length);
+    console.log("nrepl message received (%s bytes, %s)", length, printed);
+  }
+}
+var currentLogger = nullLogger;
+
 function createMessageStream(verbose, socket) {
     var messageStream = new stream.Transform();
     messageStream._writableState.objectMode = false;
@@ -63,17 +85,11 @@ function createMessageStream(verbose, socket) {
 }
 
 function nreplMessageStreamDebugLog(response, length) {
-    var inspected = "";
-    if (typeof response === "object") {
-        inspected += "{\n" + Object.keys(response).map(function(k) {
-            var v = response[k];
-            if (typeof v === 'string' && v.length > 100)
-                v = v.slice(0,100) + "...";
-                // v = '"' + (v.slice(0,100) + "...").replace(/"/g, '\\"') + '"';
-            return k + ": " + util.inspect(v, {depth: 0});
-        }).join(",\n  ") + "\n}";
-    } else inspected = util.inspect(response, {depth: 0});
-    console.log("nrepl message received (%s bytes, %s)", length, inspected);
+  try {
+    currentLogger.log(response, length);
+  } catch (e) {
+    console.error("error in nrepl message logger: ", e);
+  }
 }
 
 function consumeNreplMessageStream(emit, messages) {
@@ -192,5 +208,12 @@ function connect(options) {
 }
 
 module.exports = {
-    connect: connect
+    connect: connect,
+    log: {
+      defaultLogger: defaultLogger,
+      nullLogger: nullLogger,
+      messageLogPrinter: messageLogPrinter,
+      get currentLogger() { return currentLogger; },
+      set currentLogger(l) { return currentLogger = l; }
+    }
 }
