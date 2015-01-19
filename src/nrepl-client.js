@@ -67,7 +67,7 @@ function createMessageStream(verbose, socket) {
                     callback(); return;
                 }
                 var encodedResponseLength = bencode.encode(response, 'utf8').length;
-                verbose && nreplMessageStreamDebugLog(response, encodedResponseLength);
+                nreplLog(response, encodedResponseLength);
                 this._bytesLeft -= encodedResponseLength;
                 this.push(response);
                 this._messageCache.push(response);
@@ -84,7 +84,7 @@ function createMessageStream(verbose, socket) {
     return socket.pipe(messageStream);
 }
 
-function nreplMessageStreamDebugLog(response, length) {
+function nreplLog(response, length) {
   try {
     currentLogger.log(response, length);
   } catch (e) {
