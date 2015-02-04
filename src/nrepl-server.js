@@ -10,6 +10,7 @@
 var path = require("path");
 var ps = require("child_process");
 var util = require("util");
+var spawn = require("spawn-cmd").spawn
 var merge = util._extend;
 
 // note, the JVM will stick around when we just kill the spawning process
@@ -96,7 +97,7 @@ function startServer(hostname, port, projectPath, thenDo) {
         var procArgs = ["repl", ":headless"];
         if (hostname) procArgs = procArgs.concat([':host', hostname]);
         if (port) procArgs = procArgs.concat([':port', port]);
-        var proc = ps.spawn('lein', procArgs, {cwd: projectPath});
+        var proc = spawn('lein', procArgs, {cwd: projectPath});
     } catch (e) { thenDo(e, null); return; }
     thenDo(null, {
         proc: proc,
