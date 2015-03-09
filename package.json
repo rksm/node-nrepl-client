@@ -16,11 +16,11 @@
   "contributors": ["Stuart Mitchell <stu@stuartmitchell.com>"],
   "license": "MIT",
   "dependencies": {
-    "bencode": "~0.4.3",
+    "bencode": "~0.7.0",
     "tree-kill": "~0.0.6"
   },
   "devDependencies": {
-    "async": "~0.2",
+    "async": "~0.9",
     "nodeunit": "~0.8"
   }
 }
