@@ -121,8 +121,9 @@ function nreplSend(socket, messageStream, msgSpec, callback) {
 
     function errHandler(err) { errors.push(err); }
     function msgHandler(_messages) {
-        var done = _messages.some(function(msg) { return !!msg.status; });
-            // return msg.status && msg.status.indexOf("done") > -1; });
+        var done = _messages.some(function(msg) {
+            return msg.status && msg.status.indexOf("done") > -1;
+        });
         messages = messages.concat(_messages);
         if (!done) return;
         messageStream.removeListener('error', errHandler);

@@ -1,8 +1,8 @@
 /*global console,require,module,setTimeout,clearTimeout*/
 
+var Promise = require('bluebird');
 var nreplClient = require('../src/nrepl-client');
-var nreplServer = require('../src/nrepl-server');
-var async = require("async");
+var nreplServer = Promise.promisifyAll(require('../src/nrepl-server'));
 
 var exec = require("child_process").exec;
 
@@ -22,21 +22,18 @@ function createTimeout(test) {
 var tests = {
 
     setUp: function (callback) {
-        async.waterfall([
-            function(next) { nreplServer.start(serverOpts, next); },
-            function(serverState, next) {
-                server = serverState;
-                client = nreplClient.connect({
-                    port: serverState.port,
-                    verbose: true
-                });
-                console.log("client connecting");
-                client.once('connect', function() {
-                    console.log("client connected");
-                    next();
-                });
-            }
-        ], callback);
+        nreplServer.startAsync(serverOpts).then(function (serverState) {
+            server = serverState;
+            client = Promise.promisifyAll(nreplClient.connect({
+                port: serverState.port,
+                verbose: true
+            }));
+            console.log("client connecting");
+            return client.onceAsync('connect');
+        }).then(function () {
+            console.log("client connected");
+            callback();
+        });
     },
 
     tearDown: function (callback) {
@@ -52,14 +49,21 @@ var tests = {
         client.end();
     },
 
-    testSimpleEval: function (test) {
-        test.expect(3); createTimeout(test);
-        client.eval('(+ 3 4)', function(err, messages) {
-            console.log("in simple eval");
-            console.log(messages);
-            test.ok(!err, 'Got errors: ' + err);
+    testEval: function (test) {
+        createTimeout(test);
+        client.evalAsync('(+ 3 4)').then(function(messages) {
             test.equal(messages[0].value, '7');
             test.deepEqual(messages[1].status, ['done']);
+            return client.evalAsync('(throw (RuntimeException. "foo"))');
+        }).then(function (messages) {
+            test.equal(messages.length, 3);
+            test.equal(messages[0].ex, 'class java.lang.RuntimeException');
+            test.deepEqual(messages[0].status, ['eval-error']);
+            test.ok(/^RuntimeException foo/.test(messages[1].err));
+            test.deepEqual(messages[2].status, ['done']);
+        }).catch(function (err) {
+            test.ok(!err, 'Got errors: ' + err);
+        }).finally(function () {
             test.done();
         });
     }
