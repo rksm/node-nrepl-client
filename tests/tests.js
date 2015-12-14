@@ -1,8 +1,8 @@
 /*global console,require,module,setTimeout,clearTimeout*/
 
+var Promise = require('bluebird');
 var nreplClient = require('../src/nrepl-client');
-var nreplServer = require('../src/nrepl-server');
-var Q = require('q');
+var nreplServer = Promise.promisifyAll(require('../src/nrepl-server'));
 
 var exec = require("child_process").exec;
 
@@ -22,18 +22,18 @@ function createTimeout(test) {
 var tests = {
 
     setUp: function (callback) {
-        Q.ninvoke(nreplServer, 'start', serverOpts).then(function (serverState) {
+        nreplServer.startAsync(serverOpts).then(function (serverState) {
             server = serverState;
-            client = nreplClient.connect({
+            client = Promise.promisifyAll(nreplClient.connect({
                 port: serverState.port,
                 verbose: true
-            });
+            }));
             console.log("client connecting");
-            return Q.ninvoke(client, 'once', 'connect');
+            return client.onceAsync('connect');
         }).then(function () {
             console.log("client connected");
             callback();
-        }).done();
+        });
     },
 
     tearDown: function (callback) {
@@ -51,21 +51,21 @@ var tests = {
 
     testEval: function (test) {
         createTimeout(test);
-        Q.ninvoke(client, 'eval', '(+ 3 4)').then(function(messages) {
+        client.evalAsync('(+ 3 4)').then(function(messages) {
             test.equal(messages[0].value, '7');
             test.deepEqual(messages[1].status, ['done']);
-            return Q.ninvoke(client, 'eval', '(throw (RuntimeException. "foo"))');
+            return client.evalAsync('(throw (RuntimeException. "foo"))');
         }).then(function (messages) {
             test.equal(messages.length, 3);
             test.equal(messages[0].ex, 'class java.lang.RuntimeException');
             test.deepEqual(messages[0].status, ['eval-error']);
             test.ok(/^RuntimeException foo/.test(messages[1].err));
             test.deepEqual(messages[2].status, ['done']);
-        }).fail(function (err) {
+        }).catch(function (err) {
             test.ok(!err, 'Got errors: ' + err);
-        }).fin(function () {
+        }).finally(function () {
             test.done();
-        }).done();
+        });
     }
 };
 
