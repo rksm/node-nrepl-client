@@ -13,8 +13,9 @@ around* ;)
 To connect to a running nREPL server and send and receive an eval request do:
 
 ```js
-var nreplClient = require('nrepl-client');
-nreplClient.connect({port: 7889}).once('connect', function() {
+var client = require('nrepl-client').connect({port: 7889});
+
+client.once('connect', function() {
     var expr = '(+ 3 4)';
     client.eval(expr, function(err, result) {
         console.log('%s => ', expr, err || result);
