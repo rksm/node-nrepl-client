@@ -1,6 +1,6 @@
 {
   "name": "nrepl-client",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "node client to interact with a Clojure nREPL server.",
   "main": "src/nrepl-client.js",
   "scripts": {
@@ -13,11 +13,13 @@
     "live programming"
   ],
   "author": "Robert Krahn",
-  "contributors": ["Stuart Mitchell <stu@stuartmitchell.com>"],
+  "contributors": [
+    "Stuart Mitchell <stu@stuartmitchell.com>"
+  ],
   "license": "MIT",
   "dependencies": {
-    "bencode": "~0.7.0",
-    "tree-kill": "~0.0.6"
+    "bencode": "^2.0.1",
+    "tree-kill": "~1.2.1"
   },
   "devDependencies": {
     "async": "~0.9",
