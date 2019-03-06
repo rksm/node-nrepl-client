@@ -25,8 +25,7 @@ client.once('connect', function() {
 ```
 
 For a more detailed example and to use node.js also to start an nREPL Clojure
-process see [examples/simple-connect.js]().
-```
+process see [examples/simple-connect.js](examples/simple-connect.js).
 
 ## API
 
@@ -41,14 +40,14 @@ process see [examples/simple-connect.js]().
 
 * clojure connection
   * Wraps [nREPL messages](https://github.com/clojure/tools.nrepl#messages).
-  * `clone([session,] callback)
-  * `close([session,] callback)
-  * `describe([verbose,] callback)
-  * `eval(code, [session, id, evalFunc,] callback)
-  * `interrupt(session, id, callback)
-  * `loadFile(fileContent, [fileName, filePath,] callback)
-  * `lsSessions(callback)
-  * `stdin(stdin, callback)
+  * `clone([session,] callback)`
+  * `close([session,] callback)`
+  * `describe([verbose,] callback)`
+  * `eval(code, [session, id, evalFunc,] callback)`
+  * `interrupt(session, id, callback)`
+  * `loadFile(fileContent, [fileName, filePath,] callback)`
+  * `lsSessions(callback)`
+  * `stdin(stdin, callback)`
   * `send(msgObj, callback)` sends a custom message
 
 ### `nrepl-client/nrepl-server`
